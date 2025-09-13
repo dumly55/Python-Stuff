@@ -1,0 +1,31 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "sample",
+      "description": "",
+      "priority": "Medium",
+      "category": "General",
+      "completed": false,
+      "created": "2025-09-13"
+    },
+    {
+      "id": 2,
+      "title": "done sample",
+      "description": "finished it",
+      "priority": "Medium",
+      "category": "examples",
+      "completed": true,
+      "created": "2025-09-13"
+    },
+    {
+      "id": 3,
+      "title": "high",
+      "description": "prio is high",
+      "priority": "High",
+      "category": "General",
+      "completed": false,
+      "created": "2025-09-13"
+    }
+  ]
+}

@@ -9,13 +9,16 @@ from datetime import datetime
 class SimpleTodoList:
     def __init__(self):
         self.tasks = []
+        # Create data file path in the same directory as the script
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        self.data_file = os.path.join(script_dir, "todo_data.json")
         self.load_tasks()
     
     def load_tasks(self):
         """Load tasks from file"""
         try:
-            if os.path.exists("todo_data.json"):
-                with open("todo_data.json", 'r') as f:
+            if os.path.exists(self.data_file):
+                with open(self.data_file, 'r') as f:
                     self.tasks = json.load(f).get('tasks', [])
         except:
             self.tasks = []
@@ -23,7 +26,7 @@ class SimpleTodoList:
     def save_tasks(self):
         """Save tasks to file"""
         try:
-            with open("todo_data.json", 'w') as f:
+            with open(self.data_file, 'w') as f:
                 json.dump({'tasks': self.tasks}, f, indent=2)
             print("Saved!")
         except:
@@ -33,20 +36,26 @@ class SimpleTodoList:
         """Add a new task"""
         title = input("Task: ").strip()
         if title:
+            description = input("Description (optional): ").strip()
+            
             print("Priority levels: High, Medium, Low")
             priority = input("Priority (default: Medium): ").strip() or "Medium"
             if priority not in ["High", "Medium", "Low"]:
                 priority = "Medium"
             
+            category = input("Category (default: General): ").strip() or "General"
+            
             task = {
                 'id': len(self.tasks) + 1,
                 'title': title,
+                'description': description,
                 'priority': priority,
+                'category': category,
                 'completed': False,
                 'created': datetime.now().strftime("%Y-%m-%d")
             }
             self.tasks.append(task)
-            print(f"Added: {title} (Priority: {priority})")
+            print(f"Added: {title} (Priority: {priority}, Category: {category})")
     
     def view_tasks(self):
         """Display all tasks"""
@@ -65,7 +74,14 @@ class SimpleTodoList:
         for task in sorted_tasks:
             status = "✓" if task['completed'] else "○"
             priority_symbol = {"High": "🔴", "Medium": "🟡", "Low": "🟢"}.get(task['priority'], "⚪")
-            print(f"{status} #{task['id']} {priority_symbol} {task['title']} (Priority: {task['priority']})")
+            
+            print(f"{status} #{task['id']} {priority_symbol} {task['title']}")
+            
+            if task.get('description'):
+                print(f"   📝 {task['description']}")
+            
+            print(f"   📂 Category: {task['category']} | Priority: {task['priority']}")
+            print()
         print(f"{'='*50}")
     
     def complete_task(self):
