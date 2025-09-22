@@ -45,8 +45,12 @@ class SimpleTodoList:
             
             category = input("Category (default: General): ").strip() or "General"
             
-            # Add due date input
-            due_date_input = input("Due date (YYYY-MM-DD) or days from now (e.g., '3' for 3 days): ").strip()
+            # Add due date input with better prompts
+            print("\nDue date options:")
+            print("  • Enter a specific date: YYYY-MM-DD (e.g., 2025-12-25)")
+            print("  • Enter days from today: just a number (e.g., 7 for one week)")
+            print("  • Press Enter to skip due date")
+            due_date_input = input("When is this task due? ").strip()
             due_date = None
             
             if due_date_input:
@@ -55,12 +59,18 @@ class SimpleTodoList:
                     if due_date_input.isdigit():
                         days = int(due_date_input)
                         due_date = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
+                        print(f"✓ Due date set to: {due_date} ({days} days from today)")
                     else:
                         # Try parsing as date
                         datetime.strptime(due_date_input, "%Y-%m-%d")
                         due_date = due_date_input
+                        print(f"✓ Due date set to: {due_date}")
                 except ValueError:
-                    print("Invalid date format. Skipping due date.")
+                    print("❌ Invalid date format. Task created without due date.")
+            
+            # Show creation confirmation
+            creation_date = datetime.now().strftime("%Y-%m-%d")
+            print(f"📅 Task will be created on: {creation_date}")
             
             task = {
                 'id': len(self.tasks) + 1,
@@ -69,7 +79,7 @@ class SimpleTodoList:
                 'priority': priority,
                 'category': category,
                 'completed': False,
-                'created': datetime.now().strftime("%Y-%m-%d"),
+                'created': creation_date,
                 'due_date': due_date,
                 'completed_date': None
             }
@@ -124,6 +134,18 @@ class SimpleTodoList:
                 print(f"   📝 {task['description']}")
             
             print(f"   📂 Category: {task['category']} | Priority: {task['priority']}")
+            
+            # Display creation date
+            if task.get('created'):
+                created_date = datetime.strptime(task['created'], "%Y-%m-%d")
+                days_ago = (datetime.now() - created_date).days
+                
+                if days_ago == 0:
+                    print(f"   📅 Created: {task['created']} (Today)")
+                elif days_ago == 1:
+                    print(f"   📅 Created: {task['created']} (Yesterday)")
+                else:
+                    print(f"   📅 Created: {task['created']} ({days_ago} days ago)")
             
             # Display due date information
             if task.get('due_date'):
@@ -197,6 +219,98 @@ class SimpleTodoList:
                 print(f"{status} #{task['id']} {priority_symbol} {task['title']} ({task.get('category', 'General')})")
         else:
             print(f"No tasks found matching '{search_term}'")
+
+    def clear_completed_tasks(self):
+        """Remove all completed tasks"""
+        completed_tasks = [task for task in self.tasks if task['completed']]
+        
+        if not completed_tasks:
+            print("No completed tasks to clear.")
+            return
+        
+        print(f"\nFound {len(completed_tasks)} completed task(s):")
+        for task in completed_tasks:
+            print(f"✓ #{task['id']} {task['title']}")
+        
+        confirm = input(f"\nAre you sure you want to delete these {len(completed_tasks)} completed task(s)? (y/N): ").strip().lower()
+        
+        if confirm == 'y' or confirm == 'yes':
+            self.tasks = [task for task in self.tasks if not task['completed']]
+            print(f"Cleared {len(completed_tasks)} completed task(s).")
+        else:
+            print("Clear operation cancelled.")
+
+    def edit_task(self):
+        """Edit an existing task"""
+        try:
+            task_id = int(input("Task ID to edit: "))
+            task_found = None
+            
+            for task in self.tasks:
+                if task['id'] == task_id:
+                    task_found = task
+                    break
+            
+            if not task_found:
+                print("Task not found.")
+                return
+            
+            print(f"\nEditing task: {task_found['title']}")
+            print("Leave blank to keep current value, or enter new value:")
+            
+            # Edit title
+            new_title = input(f"Title [{task_found['title']}]: ").strip()
+            if new_title:
+                task_found['title'] = new_title
+            
+            # Edit description
+            current_desc = task_found.get('description', '')
+            new_description = input(f"Description [{current_desc}]: ").strip()
+            if new_description or new_description == "":
+                task_found['description'] = new_description
+            
+            # Edit priority
+            print("Priority levels: High, Medium, Low")
+            new_priority = input(f"Priority [{task_found['priority']}]: ").strip()
+            if new_priority and new_priority in ["High", "Medium", "Low"]:
+                task_found['priority'] = new_priority
+            elif new_priority and new_priority not in ["High", "Medium", "Low"]:
+                print("Invalid priority. Keeping current value.")
+            
+            # Edit category
+            new_category = input(f"Category [{task_found['category']}]: ").strip()
+            if new_category:
+                task_found['category'] = new_category
+            
+            # Edit due date
+            current_due = task_found.get('due_date', 'None')
+            print(f"Current due date: {current_due}")
+            due_date_input = input("Due date (YYYY-MM-DD, days from now, or 'clear' to remove): ").strip()
+            
+            if due_date_input.lower() == 'clear':
+                task_found['due_date'] = None
+                print("Due date cleared.")
+            elif due_date_input:
+                due_date = None
+                try:
+                    # Try parsing as number of days
+                    if due_date_input.isdigit():
+                        days = int(due_date_input)
+                        due_date = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
+                    else:
+                        # Try parsing as date
+                        datetime.strptime(due_date_input, "%Y-%m-%d")
+                        due_date = due_date_input
+                    
+                    task_found['due_date'] = due_date
+                    print(f"Due date updated to: {due_date}")
+                except ValueError:
+                    print("Invalid date format. Keeping current due date.")
+            
+            print(f"\nTask #{task_id} updated successfully!")
+            
+        except ValueError:
+            print("Invalid ID.")
     
     def run(self):
         """Main application loop"""
@@ -211,9 +325,11 @@ class SimpleTodoList:
             print("6. Complete task")
             print("7. Delete task")
             print("8. Search tasks")
-            print("9. Save & Exit")
+            print("9. Edit task")
+            print("10. Clear completed tasks")
+            print("11. Save & Exit")
             
-            choice = input("\nChoice (1-9): ").strip()
+            choice = input("\nChoice (1-11): ").strip()
             
             if choice == '1':
                 self.add_task()
@@ -232,6 +348,10 @@ class SimpleTodoList:
             elif choice == '8':
                 self.search_tasks()
             elif choice == '9':
+                self.edit_task()
+            elif choice == '10':
+                self.clear_completed_tasks()
+            elif choice == '11':
                 self.save_tasks()
                 print("Goodbye!")
                 break
