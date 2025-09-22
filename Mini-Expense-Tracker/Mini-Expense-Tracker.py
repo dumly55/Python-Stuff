@@ -6,6 +6,7 @@ Requires: mysql-connector-python
 
 import os
 import csv
+import getpass
 from datetime import date
 from typing import List, Dict, Optional
 
@@ -15,12 +16,26 @@ from mysql.connector import Error
 # ---- Configure via env vars or edit here ----
 DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
 DB_USER = os.getenv("DB_USER", "root")
-DB_PASS = os.getenv("DB_PASS", "")
 DB_NAME = os.getenv("DB_NAME", "mini_expense")
+
+# Global variable to store the password once entered
+_db_password = None
+
+def get_db_password():
+    """Get database password from user input (hidden) if not already set"""
+    global _db_password
+    if _db_password is None:
+        print(f"Connecting to MySQL database '{DB_NAME}' on {DB_HOST}")
+        print("Note: Password will be hidden as you type (this is normal for security)")
+        _db_password = getpass.getpass(f"Enter password for MySQL user '{DB_USER}': ")
+    return _db_password
 
 def get_conn():
     return mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME
+        host=DB_HOST, 
+        user=DB_USER, 
+        password=get_db_password(), 
+        database=DB_NAME
     )
 
 # ---- Core DB helpers ----
@@ -90,19 +105,18 @@ def write_sample_csv(path="sample_expenses.csv") -> str:
 
 def main():
     print("Mini Expense Tracker (DB:", DB_NAME, ")")
-    # 1) Add a single row (parameterized insert)
-    insert_expense("2025-09-18", -12.00, "Dining", "Lunch")
-
-    # 2) Import a tiny CSV
-    csv_path = write_sample_csv()
-    added = import_csv(csv_path)
-    print(f"Imported {added} rows from {csv_path}")
-
-    # 3) Reports
+    
+    # Just display existing data - no automatic inserts
+    print("Displaying current data from database...\n")
+    
+    # Display reports from existing data
     report_monthly_totals()
     report_category_breakdown("2025-09")
 
     print("\nDone.")
+    print("\nNote: To add data, you can:")
+    print("- Edit the database directly in MySQL Workbench")
+    print("- Uncomment the insert/import lines in the code if needed")
 
 if __name__ == "__main__":
     main()
