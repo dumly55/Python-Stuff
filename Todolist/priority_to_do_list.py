@@ -72,8 +72,12 @@ class SimpleTodoList:
             creation_date = datetime.now().strftime("%Y-%m-%d")
             print(f"📅 Task will be created on: {creation_date}")
             
+            # Generate unique ID by finding the maximum existing ID
+            max_id = max([task['id'] for task in self.tasks], default=0)
+            new_id = max_id + 1
+            
             task = {
-                'id': len(self.tasks) + 1,
+                'id': new_id,
                 'title': title,
                 'description': description,
                 'priority': priority,
@@ -113,12 +117,25 @@ class SimpleTodoList:
             print(f"\nNo tasks found with filter: {filter_by}")
             return
         
-        # Sort tasks by priority and due date
-        priority_order = {'High': 3, 'Medium': 2, 'Low': 1}
-        filtered_tasks.sort(key=lambda x: (
-            priority_order.get(x['priority'], 0),
-            x.get('due_date') or '9999-12-31'
-        ), reverse=True)
+        # Sort tasks by due date (earliest first), then by priority, then by creation date
+        def sort_key(task):
+            # Handle due dates: None/empty dates go to the end
+            due_date = task.get('due_date')
+            if due_date:
+                due_sort = due_date
+            else:
+                due_sort = '9999-12-31'  # Far future date for tasks without due dates
+            
+            # Priority order (High first)
+            priority_order = {'High': 1, 'Medium': 2, 'Low': 3}
+            priority_sort = priority_order.get(task['priority'], 4)
+            
+            # Creation date for final sorting
+            created_sort = task.get('created', '9999-12-31')
+            
+            return (due_sort, priority_sort, created_sort)
+        
+        filtered_tasks.sort(key=sort_key)
         
         print(f"\n{'='*60}")
         print(f"TO-DO LIST ({len(filtered_tasks)} tasks)")
@@ -193,6 +210,11 @@ class SimpleTodoList:
                     title = task['title']
                     del self.tasks[i]
                     print(f"Deleted: {title}")
+                    
+                    # Ask if user wants to reorganize IDs
+                    reorganize = input("Reorganize task IDs to be sequential? (y/N): ").strip().lower()
+                    if reorganize == 'y' or reorganize == 'yes':
+                        self.reorganize_ids()
                     return
             print("Task not found.")
         except ValueError:
@@ -237,8 +259,16 @@ class SimpleTodoList:
         if confirm == 'y' or confirm == 'yes':
             self.tasks = [task for task in self.tasks if not task['completed']]
             print(f"Cleared {len(completed_tasks)} completed task(s).")
+            # Reorganize IDs after clearing
+            self.reorganize_ids()
         else:
             print("Clear operation cancelled.")
+
+    def reorganize_ids(self):
+        """Reorganize task IDs to be sequential (1, 2, 3, ...)"""
+        for i, task in enumerate(self.tasks, 1):
+            task['id'] = i
+        print("Task IDs reorganized sequentially.")
 
     def edit_task(self):
         """Edit an existing task"""
@@ -327,9 +357,10 @@ class SimpleTodoList:
             print("8. Search tasks")
             print("9. Edit task")
             print("10. Clear completed tasks")
-            print("11. Save & Exit")
+            print("11. Reorganize task IDs")
+            print("12. Save & Exit")
             
-            choice = input("\nChoice (1-11): ").strip()
+            choice = input("\nChoice (1-12): ").strip()
             
             if choice == '1':
                 self.add_task()
@@ -352,6 +383,8 @@ class SimpleTodoList:
             elif choice == '10':
                 self.clear_completed_tasks()
             elif choice == '11':
+                self.reorganize_ids()
+            elif choice == '12':
                 self.save_tasks()
                 print("Goodbye!")
                 break
