@@ -210,11 +210,6 @@ class SimpleTodoList:
                     title = task['title']
                     del self.tasks[i]
                     print(f"Deleted: {title}")
-                    
-                    # Ask if user wants to reorganize IDs
-                    reorganize = input("Reorganize task IDs to be sequential? (y/N): ").strip().lower()
-                    if reorganize == 'y' or reorganize == 'yes':
-                        self.reorganize_ids()
                     return
             print("Task not found.")
         except ValueError:
@@ -357,10 +352,9 @@ class SimpleTodoList:
             print("8. Search tasks")
             print("9. Edit task")
             print("10. Clear completed tasks")
-            print("11. Reorganize task IDs")
-            print("12. Save & Exit")
+            print("11. Save & Exit")
             
-            choice = input("\nChoice (1-12): ").strip()
+            choice = input("\nChoice (1-11): ").strip()
             
             if choice == '1':
                 self.add_task()
@@ -383,8 +377,6 @@ class SimpleTodoList:
             elif choice == '10':
                 self.clear_completed_tasks()
             elif choice == '11':
-                self.reorganize_ids()
-            elif choice == '12':
                 self.save_tasks()
                 print("Goodbye!")
                 break

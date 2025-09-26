@@ -2,30 +2,36 @@
   "tasks": [
     {
       "id": 1,
-      "title": "sample",
+      "title": "testing",
       "description": "",
       "priority": "Medium",
       "category": "General",
       "completed": false,
-      "created": "2025-09-13"
+      "created": "2025-09-26",
+      "due_date": "2025-10-01",
+      "completed_date": null
     },
     {
       "id": 2,
-      "title": "done sample",
-      "description": "finished it",
+      "title": "ts",
+      "description": "",
       "priority": "Medium",
-      "category": "examples",
-      "completed": true,
-      "created": "2025-09-13"
+      "category": "General",
+      "completed": false,
+      "created": "2025-09-26",
+      "due_date": "2025-09-28",
+      "completed_date": null
     },
     {
       "id": 3,
-      "title": "high",
-      "description": "prio is high",
+      "title": "wer",
+      "description": "wafd",
       "priority": "High",
       "category": "General",
       "completed": false,
-      "created": "2025-09-13"
+      "created": "2025-09-26",
+      "due_date": "2025-10-05",
+      "completed_date": null
     }
   ]
 }
